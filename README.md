@@ -37,7 +37,7 @@ dependencyResolutionManagement {
 
 ```
 dependencies {
-		implementation 'com.github.Zbyteio:zbyte-android-app:zbyte.1.0.0'
+		implementation 'com.github.Zbyteio:zbyte-android-sdk:v1.0.0'
 	}
 ```
 
@@ -46,7 +46,7 @@ dependencies {
 Just add the following code to your <b>xml layout</b> file
 
 ```
-<com.zbyte.zbyteplatform.ZBytePlatform
+<com.zbyte.nftsdk.ZBytePlatform
         android:id="@+id/zbyteView"
         android:layout_width="0dp"
         android:layout_height="0dp"
