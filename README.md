@@ -37,7 +37,7 @@ dependencyResolutionManagement {
 
 ```
 dependencies {
-		implementation 'com.github.Zbyteio:zbyte-android-sdk:v1.0.0'
+		implementation 'com.github.Zbyteio:zbyte-android-sdk:1.0.1'
 	}
 ```
 
