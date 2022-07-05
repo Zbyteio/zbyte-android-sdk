@@ -24,14 +24,14 @@ android {
     buildTypes {
         debug {
             //defining the key/value pair to fetch the url inside the file
-            buildConfigField("String", "WEB_URL", properties['WEB_URL_DEBUG'])
+            buildConfigField("String", "WEB_URL", properties['WEB_URL_TEST'])
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             //defining the key/value pair to fetch the url inside the file
-            buildConfigField("String", "WEB_URL", properties['WEB_URL'])
+            buildConfigField("String", "WEB_URL", properties['WEB_URL_PROD'])
         }
     }
     compileOptions {
