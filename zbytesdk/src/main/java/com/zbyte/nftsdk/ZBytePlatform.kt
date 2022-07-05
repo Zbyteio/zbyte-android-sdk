@@ -99,7 +99,8 @@ class ZBytePlatform : WebView {
                         "javascript:localStorage.getItem('account')"
                     ) {
                         val userID = getUserID(it)
-                        fetchEmail(userID, url)
+                        if (userID.isNotEmpty())
+                            fetchEmail(userID, url)
                     }
                 }
             }
@@ -145,15 +146,19 @@ class ZBytePlatform : WebView {
      * @return User Id in String format
      */
     private fun getUserID(jsonString: String): String {
-        val formattedJSON = jsonString.replace("\\", "")
-        val result = formattedJSON.substring(1, formattedJSON.length - 1)
-        Log.e("JSON::", result)
+        return if (jsonString.length > 10) {
+            val formattedJSON = jsonString.replace("\\", "")
+            val result = formattedJSON.substring(1, formattedJSON.length - 1)
+            Log.e("JSON::", result)
 
-        val gson = GsonBuilder().create()
-        val account = gson.fromJson(result, ConnectedAccount::class.java)
-        Log.e("Received User ID:", "${account.connectedAccount.loginOptions.id}")
+            val gson = GsonBuilder().create()
+            val account = gson.fromJson(result, ConnectedAccount::class.java)
+            Log.e("Received User ID:", "${account.connectedAccount.loginOptions.id}")
 
-        return account.connectedAccount.loginOptions.id.toString()
+            account.connectedAccount.loginOptions.id.toString()
+        } else {
+            ""
+        }
     }
 
     /**
@@ -251,7 +256,7 @@ class ZBytePlatform : WebView {
             .whereEqualTo("user_email", email)
             .get()
             .addOnSuccessListener {
-                if(it.isEmpty) {
+                if (it.isEmpty) {
                     storeDataToFireStore(email)
                 } else {
                     for (document in it) {
