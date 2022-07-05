@@ -39,6 +39,7 @@ class ZBytePlatform : WebView {
     private val webURL = BuildConfig.WEB_URL
     private val cookieName = "accessToken"
     private val suffix = "mynft"
+    private val suffixTest = "nftService"
     private val fireStoreDB = Firebase.firestore
 
     //Initializing the WebView on loading the Activity/Fragment
@@ -92,7 +93,7 @@ class ZBytePlatform : WebView {
 
         override fun onLoadResource(view: WebView?, url: String?) {
             //Check for the url after login success
-            if (url.toString().endsWith(suffix)) {
+            if (url.toString().endsWith(suffix) || url.toString().endsWith(suffixTest)) {
                 view.apply {
                     evaluateJavascript(
                         "javascript:localStorage.getItem('account')"
@@ -173,9 +174,13 @@ class ZBytePlatform : WebView {
                         RequestBody(userID.toInt())
                     )
                     if (response.isSuccessful) {
-                        Log.e("EMAIL", response.body()?.data?.email!!)
-                        val email = response.body()?.data?.email!!
-                        isDocumentPresent(email)
+                        try {
+                            Log.e("EMAIL", response.body()?.data?.email!!)
+                            val email = response.body()?.data?.email!!
+                            isDocumentPresent(email)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     } else {
                         try {
                             val jObjError = JSONObject(

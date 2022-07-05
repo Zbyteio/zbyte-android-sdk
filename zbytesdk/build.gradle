@@ -25,6 +25,7 @@ android {
         debug {
             //defining the key/value pair to fetch the url inside the file
             buildConfigField("String", "WEB_URL", properties['WEB_URL_TEST'])
+            buildConfigField("String", "API_URL", properties['API_URL_TEST'])
         }
         release {
             minifyEnabled false
@@ -32,6 +33,7 @@ android {
 
             //defining the key/value pair to fetch the url inside the file
             buildConfigField("String", "WEB_URL", properties['WEB_URL_PROD'])
+            buildConfigField("String", "API_URL", properties['API_URL_PROD'])
         }
     }
     compileOptions {

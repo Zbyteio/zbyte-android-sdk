@@ -20,7 +20,7 @@ object ApiService {
         val httpClient = OkHttpClient.Builder()
         httpClient.addInterceptor(logging)
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.WEB_URL)
+            .baseUrl(BuildConfig.API_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(httpClient.build())
             .build()
