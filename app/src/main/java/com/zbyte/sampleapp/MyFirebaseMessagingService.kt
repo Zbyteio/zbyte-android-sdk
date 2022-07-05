@@ -12,18 +12,41 @@ import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
+/**
+ * Class to handle the Push Notifications Received
+ *
+ * @since 17/06/2022
+ * @author Yash Parikh
+ */
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
+    /**
+     * Function to handle the push notification view when received
+     * setting the parameters to the notification
+     *
+     * @param message RemoteMessage received from the Firebase
+     */
     override fun onMessageReceived(message: RemoteMessage) {
         if (message.notification != null) {
             showNotification(message.notification!!.title!!, message.notification!!.body!!)
         }
     }
 
+    /**
+     * Function to handle the new token for FCM received
+     *
+     * @param token String Token that will be updated for the devices
+     */
     override fun onNewToken(token: String) {
         Log.e("Token Service::", token)
     }
 
+    /**
+     * Function to set the parameters and customize the received notification
+     *
+     * @param title Notification Title from RemoteMessage
+     * @param message Notification Message/Details from RemoteMessage
+     */
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun showNotification(title: String, message: String) {
         val intent = Intent(this, ZByteActivity::class.java)
