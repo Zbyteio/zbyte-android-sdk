@@ -28,7 +28,6 @@ private class Config {
 
     fun store(): Boolean {
         var retrieved = false
-
         try {
             configuration!!.store(FileOutputStream(this.configFile), null)
             retrieved = true
