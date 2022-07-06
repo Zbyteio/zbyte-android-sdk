@@ -10,6 +10,8 @@ import androidx.core.graphics.drawable.toBitmap
 
 private class ZByteTab {
 
+    private val webURL = BuildConfig.WEB_URL
+
     fun openCustomTab(context: Context, toolbarColor: Int) {
         val builder = CustomTabsIntent.Builder()
         val defaultColor = CustomTabColorSchemeParams.Builder()
@@ -21,6 +23,6 @@ private class ZByteTab {
         }
         builder.setShareState(CustomTabsIntent.SHARE_STATE_OFF)
         val intent = builder.build()
-        intent.launchUrl(context, Uri.parse(WEB_URL))
+        intent.launchUrl(context, Uri.parse(webURL))
     }
 }
