@@ -42,6 +42,7 @@ class ZBytePlatform : WebView {
     private val suffixTest = "nftService"
     private val fireStoreDB = Firebase.firestore
     private var isCalled = false
+    private val collectionName = if(IS_TEST) "users_test" else "users"
 
     //Initializing the WebView on loading the Activity/Fragment
     init {
@@ -243,7 +244,7 @@ class ZBytePlatform : WebView {
             "device_type" to BuildConfig.DEVICE_TYPE
         )
 
-        fireStoreDB.collection("users")
+        fireStoreDB.collection(collectionName)
             .add(userInfo)
             .addOnSuccessListener { Log.e("DOCUMENT::", "Document ID:: ${it.id}") }
             .addOnFailureListener { Log.e("FAIL::", "Error adding Document", it) }
@@ -256,7 +257,7 @@ class ZBytePlatform : WebView {
      * @param email Email received after calling 'fetchEmail(userID: String, url: String?)' function
      */
     private fun isDocumentPresent(email: String) {
-        fireStoreDB.collection("users")
+        fireStoreDB.collection(collectionName)
             .whereEqualTo("user_email", email)
             .get()
             .addOnSuccessListener {
