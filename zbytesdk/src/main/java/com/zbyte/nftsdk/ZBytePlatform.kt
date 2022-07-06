@@ -36,11 +36,12 @@ class ZBytePlatform : WebView {
     constructor(context: Context, attributeSet: AttributeSet) : super(context, attributeSet)
 
     private val apiService = ApiService.getInstance().create(ZByteApi::class.java)
-    private val webURL = BuildConfig.WEB_URL
     private val cookieName = "accessToken"
     private val suffix = "mynft"
+    private val webUrl = if (IS_TEST) BuildConfig.WEB_URL_TEST else BuildConfig.WEB_URL_PROD
     private val suffixTest = "nftService"
     private val fireStoreDB = Firebase.firestore
+    private var isCalled = false
 
     //Initializing the WebView on loading the Activity/Fragment
     init {
@@ -57,7 +58,7 @@ class ZBytePlatform : WebView {
         val errorAnim = view.findViewById<LottieAnimationView>(R.id.errorAnim)
 
         this.apply {
-            loadUrl(webURL)
+            loadUrl(webUrl)
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.useWideViewPort = true
@@ -93,14 +94,17 @@ class ZBytePlatform : WebView {
 
         override fun onLoadResource(view: WebView?, url: String?) {
             //Check for the url after login success
-            if (url.toString().endsWith(suffix) || url.toString().endsWith(suffixTest)) {
-                view.apply {
-                    evaluateJavascript(
-                        "javascript:localStorage.getItem('account')"
-                    ) {
-                        val userID = getUserID(it)
-                        if (userID.isNotEmpty())
-                            fetchEmail(userID, url)
+            if (!isCalled) {
+                if (url.toString().endsWith(suffix) || url.toString().endsWith(suffixTest)) {
+                    view.apply {
+                        evaluateJavascript(
+                            "javascript:localStorage.getItem('account')"
+                        ) {
+                            isCalled = true
+                            val userID = getUserID(it)
+                            if (userID.isNotEmpty())
+                                fetchEmail(userID, url)
+                        }
                     }
                 }
             }
