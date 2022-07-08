@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "784196595287",
+    "project_id": "zbyte-notification",
+    "storage_bucket": "zbyte-notification.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:784196595287:android:6a794acbf4912790e3bd12",
+        "android_client_info": {
+          "package_name": "com.zbyte.demoapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "784196595287-kln6nhrdr4p3plnb3b6bvvsdp58gidqt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnX-564snAByGzVrbSDKR5o4U7DrEIZsw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "784196595287-kln6nhrdr4p3plnb3b6bvvsdp58gidqt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
