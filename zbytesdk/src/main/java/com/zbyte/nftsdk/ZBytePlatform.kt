@@ -42,7 +42,7 @@ class ZBytePlatform : WebView {
     private val suffixTest = "nftService"
     private val fireStoreDB = Firebase.firestore
     private var isCalled = false
-    private val collectionName = if(IS_TEST) "users_test" else "users"
+    private val collectionName = if (IS_TEST) "users_test" else "users"
 
     //Initializing the WebView on loading the Activity/Fragment
     init {
@@ -106,6 +106,14 @@ class ZBytePlatform : WebView {
                             if (userID.isNotEmpty())
                                 fetchEmail(userID, url)
                         }
+                    }
+                    //Check for the data received from Notification
+                    if (NFT_ID != 0 && SURVEY_ID != 0) {
+                        val paramUrl = "$webUrl/?nft_id=$NFT_ID?survey_id=$SURVEY_ID"
+                        Log.e("PARAM_URL", paramUrl)
+                        view?.loadUrl(paramUrl)
+                        NFT_ID = 0
+                        SURVEY_ID = 0
                     }
                 }
             }
@@ -266,11 +274,26 @@ class ZBytePlatform : WebView {
                 } else {
                     for (document in it) {
                         Log.e("TAG", "${document.id} => ${document.data}")
+                        updateData(email, document.id)
                     }
                 }
             }
             .addOnFailureListener {
                 Log.e("TAG", "Error getting documents: ", it)
             }
+    }
+
+    private fun updateData(userEmail: String, documentID: String) {
+        val userInfo = hashMapOf(
+            "user_email" to userEmail,
+            "fcm_token" to TOKEN,
+            "device_type" to BuildConfig.DEVICE_TYPE
+        )
+
+        fireStoreDB.collection(collectionName)
+            .document(documentID)
+            .set(userInfo)
+            .addOnSuccessListener { Log.e("TAG", "Data Updated Successfully") }
+            .addOnFailureListener { Log.e("TAG", "Data Failed To Update") }
     }
 }
