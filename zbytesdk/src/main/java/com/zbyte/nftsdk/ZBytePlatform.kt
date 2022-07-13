@@ -142,9 +142,9 @@ class ZBytePlatform : WebView {
         ) {
             //Handling the error for loading the webpage
             if (error?.errorCode == ERROR_HOST_LOOKUP || error?.errorCode == ERROR_UNKNOWN) {
-                errorAnim.visibility = View.VISIBLE
+                errorAnim.visibility = View.GONE
                 progress.visibility = View.GONE
-                view?.loadUrl("about:blank")
+                //view?.loadUrl("about:blank")
             } else {
                 errorAnim.visibility = View.GONE
             }
