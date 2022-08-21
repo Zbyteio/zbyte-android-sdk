@@ -59,7 +59,11 @@ class ZBytePlatform : WebView {
         val errorAnim = view.findViewById<LottieAnimationView>(R.id.errorAnim)
 
         this.apply {
-            loadUrl(webUrl)
+            if(CUSTOM_URL.isNotEmpty()) {
+                loadUrl(CUSTOM_URL)
+            } else {
+                loadUrl(webUrl)
+            }
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.useWideViewPort = true
@@ -283,6 +287,11 @@ class ZBytePlatform : WebView {
             }
     }
 
+    /**
+     * Function to update the device token in the Firestore Database for the logged-in user
+     *
+     * @param userEmail Email received in the 'isDocumentPresent(email: String)' function
+     */
     private fun updateData(userEmail: String, documentID: String) {
         val userInfo = hashMapOf(
             "user_email" to userEmail,
