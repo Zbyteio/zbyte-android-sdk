@@ -60,10 +60,8 @@ class ZBytePlatform : WebView {
 
         this.apply {
             if(CUSTOM_URL.isNotEmpty()) {
-                CURRENT_URL = CUSTOM_URL
                 loadUrl(CUSTOM_URL)
             } else {
-                CURRENT_URL = webUrl
                 loadUrl(webUrl)
             }
             settings.javaScriptEnabled = true
