@@ -193,6 +193,7 @@ class ZBytePlatform : WebView {
                 CoroutineScope(Dispatchers.IO).launch {
                     val response = apiService.getUserEmail(
                         "Bearer $token",
+                        "getUserProfile",
                         RequestBody(userID.toInt())
                     )
                     if (response.isSuccessful) {
