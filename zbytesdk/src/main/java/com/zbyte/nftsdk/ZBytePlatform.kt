@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.View
 import android.webkit.*
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.airbnb.lottie.LottieAnimationView
 import com.google.firebase.firestore.ktx.firestore
@@ -37,8 +38,10 @@ class ZBytePlatform : WebView {
 
     private val apiService = ApiService.getInstance().create(ZByteApi::class.java)
     private val cookieName = "accessToken"
+    private val refreshTokenCookie = "refreshToken"
     private val suffix = "mynft"
-    private val webUrl = if (IS_TEST) BuildConfig.WEB_URL_TEST else BuildConfig.WEB_URL_PROD
+    private val webUrl =
+        if (IS_TEST) BuildConfig.WEB_URL_TEST else if (IS_DEV) BuildConfig.WEB_URL_DEV else BuildConfig.WEB_URL_PROD
     private val suffixTest = "nftService"
     private val fireStoreDB = Firebase.firestore
     private var isCalled = false
@@ -59,7 +62,7 @@ class ZBytePlatform : WebView {
         val errorAnim = view.findViewById<LottieAnimationView>(R.id.errorAnim)
 
         this.apply {
-            if(CUSTOM_URL.isNotEmpty()) {
+            if (CUSTOM_URL.isNotEmpty()) {
                 loadUrl(CUSTOM_URL)
             } else {
                 loadUrl(webUrl)
@@ -108,7 +111,7 @@ class ZBytePlatform : WebView {
                             isCalled = true
                             val userID = getUserID(it)
                             if (userID.isNotEmpty())
-                                fetchEmail(userID, url)
+                                getEmailFromFireStore(userID)
                         }
                     }
                     //Check for the data received from Notification
@@ -186,23 +189,37 @@ class ZBytePlatform : WebView {
      *
      * @throws NumberFormatException in case of invalid userId String
      */
+    @Suppress("unused")
     private fun fetchEmail(userID: String, url: String?) {
         try {
             if (userID.isNotEmpty()) {
                 val token = getToken(url!!)
+                val refreshToken = getRefreshToken(url)
+                //COOKIE_TOKEN = getToken(url!!)
+                //COOKIE_REFRESH_TOKEN = getRefreshToken(url)
                 CoroutineScope(Dispatchers.IO).launch {
                     val response = apiService.getUserEmail(
-                        "Bearer $token",
+                        "accessToken=$token; refreshToken=$refreshToken",
                         "getUserProfile",
                         RequestBody(userID.toInt())
                     )
                     if (response.isSuccessful) {
-                        try {
-                            Log.e("EMAIL", response.body()?.data?.email!!)
-                            val email = response.body()?.data?.email!!
-                            isDocumentPresent(email)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                        if (response.body() != null) {
+                            try {
+                                Log.e("EMAIL", response.body()?.data?.email!!)
+                                val email = response.body()?.data?.email!!
+                                isDocumentPresent(email)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        } else {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                Toast.makeText(
+                                    context,
+                                    "Invalid Response",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     } else {
                         try {
@@ -222,6 +239,79 @@ class ZBytePlatform : WebView {
         } catch (e: NumberFormatException) {
             e.printStackTrace()
         }
+    }
+
+    /**
+     * Function to get the collection name based on the environment selected
+     * Example: If selected URL is "https://appdev.zbyte.io" the collection name would be 'appdev'
+     *
+     * @return String collection name appended with 'user_' example: user_appdev
+     */
+    private fun getCollectionName(url: String): String {
+        val initialSubString = url.substringBefore('.')
+        return "user_${initialSubString.substringAfterLast('/')}"
+    }
+
+    /**
+     * Function to get email from Firebase FireStore Database
+     *
+     * @param userID User Id received from the local storage of the opened web page
+     */
+    private fun getEmailFromFireStore(userID: String) {
+        val collection = if (CUSTOM_URL.isNotEmpty()) {
+            getCollectionName(CUSTOM_URL)
+        } else {
+            getCollectionName(webUrl)
+        }
+        Log.e("URL", webUrl)
+        Log.e("Collection", collection)
+        fireStoreDB.collection(collection)
+            .whereEqualTo("user_id", userID.toInt())
+            .get()
+            .addOnSuccessListener {
+                if (it.isEmpty) {
+                    Log.e("TAG", "Firestore Data Empty")
+                } else {
+                    var email = ""
+                    var docId = ""
+                    for (document in it) {
+                        Log.e("TAG", "${document.id} => ${document.data}")
+                        Log.e("EMAIL", "" + document.data["user_email"])
+                        docId = document.id
+                        email = document.data["user_email"].toString()
+                    }
+                    //Updating the document with the token and device type
+                    updateData(
+                        documentID = docId,
+                        userEmail = email,
+                        userId = userID.toInt(),
+                        collection = collection
+                    )
+                }
+            }
+            .addOnFailureListener {
+                Log.e("TAG", "Error getting Email: ", it)
+            }
+    }
+
+    /**
+     * Function to update the device token in the Firestore Database for the logged-in user
+     *
+     * @param userEmail Email received in the 'isDocumentPresent(email: String)' function
+     */
+    private fun updateData(userEmail: String, documentID: String, userId: Int, collection: String) {
+        val userInfo = hashMapOf(
+            "user_email" to userEmail,
+            "user_id" to userId,
+            "fcm_token" to TOKEN,
+            "device_type" to BuildConfig.DEVICE_TYPE
+        )
+
+        fireStoreDB.collection(collection)
+            .document(documentID)
+            .set(userInfo)
+            .addOnSuccessListener { Log.e("TAG", "Data Updated Successfully") }
+            .addOnFailureListener { Log.e("TAG", "Data Failed To Update") }
     }
 
     /**
@@ -246,7 +336,28 @@ class ZBytePlatform : WebView {
     }
 
     /**
-     * Function to store data to the Firebase Firestore Database
+     * Function to fetch the refresh token from the webpage cookie
+     *
+     * @param url The loaded URL from the WebView
+     * @return String refresh token to access the API to fetch Email Address
+     */
+    private fun getRefreshToken(url: String): String {
+        var token = ""
+        val cookieManager = CookieManager.getInstance()
+        val tokenReceived = cookieManager.getCookie(url)
+        val temp = tokenReceived.split(";").toTypedArray()
+        for (ar1 in temp) {
+            if (ar1.contains(refreshTokenCookie)) {
+                val temp1 = ar1.split("=").toTypedArray()
+                token = temp1[1]
+                break
+            }
+        }
+        return token
+    }
+
+    /**
+     * Function to store data to the Firebase FireStore Database
      *
      * @param userEmail Email received after calling 'fetchEmail(userID: String, url: String?)' function
      */
@@ -279,31 +390,12 @@ class ZBytePlatform : WebView {
                 } else {
                     for (document in it) {
                         Log.e("TAG", "${document.id} => ${document.data}")
-                        updateData(email, document.id)
+                        //updateData(email, document.id)
                     }
                 }
             }
             .addOnFailureListener {
                 Log.e("TAG", "Error getting documents: ", it)
             }
-    }
-
-    /**
-     * Function to update the device token in the Firestore Database for the logged-in user
-     *
-     * @param userEmail Email received in the 'isDocumentPresent(email: String)' function
-     */
-    private fun updateData(userEmail: String, documentID: String) {
-        val userInfo = hashMapOf(
-            "user_email" to userEmail,
-            "fcm_token" to TOKEN,
-            "device_type" to BuildConfig.DEVICE_TYPE
-        )
-
-        fireStoreDB.collection(collectionName)
-            .document(documentID)
-            .set(userInfo)
-            .addOnSuccessListener { Log.e("TAG", "Data Updated Successfully") }
-            .addOnFailureListener { Log.e("TAG", "Data Failed To Update") }
     }
 }
