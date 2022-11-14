@@ -13,9 +13,10 @@ import retrofit2.http.POST
  */
 interface ZByteApi {
 
-    @POST("getUserProfile")
+    @POST("api/userService")
     suspend fun getUserEmail(
-        @Header("Authorization") token: String,
+        @Header("Cookie") cookieData: String,
+        @Header("action") userProfile: String,
         @Body requestBody: RequestBody
     ): Response<UserDetails>
 }
