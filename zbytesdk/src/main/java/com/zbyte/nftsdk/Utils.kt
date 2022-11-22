@@ -10,3 +10,4 @@ var CUSTOM_URL = ""
 var CUSTOM_API_URL = ""
 var COOKIE_TOKEN = ""
 var COOKIE_REFRESH_TOKEN = ""
+var IS_FROM_NOTIFICATION = false

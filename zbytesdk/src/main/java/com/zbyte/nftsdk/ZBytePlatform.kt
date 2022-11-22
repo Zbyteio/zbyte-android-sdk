@@ -115,7 +115,7 @@ class ZBytePlatform : WebView {
                         }
                     }
                     //Check for the data received from Notification
-                    if (NFT_ID != 0 && SURVEY_ID != 0) {
+                    if (IS_FROM_NOTIFICATION && NFT_ID != 0 && SURVEY_ID != 0) {
                         val paramUrl = if (CUSTOM_URL.isNotEmpty()) {
                             "$CUSTOM_URL/mynft?nft_id=$NFT_ID&survey_id=$SURVEY_ID"
                         } else {
